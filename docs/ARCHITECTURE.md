@@ -112,3 +112,15 @@ Cold Store (MinIO) ◄─ Disk Spool (retry worker)
 - Plug in richer detection sources (Netflow, Zeek) by implementing the `Tailer` or pushing events via HTTP.
 - Add dedicated detection repository separate from events for analytics-heavy workloads.
 - Extend decision service for allow-list decay, automated unblock policies, and integration with SOAR platforms.
+
+## Mini SIEM API (Standalone Service)
+
+The `mini-siem-api/` directory contains a trimmed-down HTTP service derived from the Server Analyst concepts. It follows the same domain/application/infra layering and exposes a Swagger-documented REST API for:
+
+- Event ingestion with rate limiting and batch support
+- Rule management (create/list/toggle) guarded by API key middleware
+- Detection listing and detail views with time/severity filters
+- Analyst decisions audit trail
+- Observability endpoints (`/health`, `/metrics`, `/swagger`)
+
+Events, detections, and decisions are persisted through GORM repositories (SQLite or PostgreSQL) with optional cold storage uploads via MinIO. The detection engine reuses the regex rule engine and is warmed on startup. Docker assets (`mini-siem-api/Dockerfile`, `mini-siem-api/docker-compose.yaml`) allow running the API alongside PostgreSQL for local testing.

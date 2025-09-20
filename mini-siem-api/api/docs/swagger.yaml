@@ -1,0 +1,396 @@
+definitions:
+  api_handlers.DecisionResponse:
+    properties:
+      action:
+        type: string
+      created_at:
+        type: string
+      detection_id:
+        type: integer
+      id:
+        type: integer
+      notes:
+        type: string
+      reason:
+        type: string
+      target:
+        type: string
+    type: object
+  api_handlers.DetectionResponse:
+    properties:
+      event_id:
+        type: integer
+      id:
+        type: integer
+      matched_at:
+        type: string
+      metadata:
+        additionalProperties: {}
+        type: object
+      rule_id:
+        type: integer
+      severity:
+        type: string
+      summary:
+        type: string
+    type: object
+  api_handlers.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  api_handlers.EventResponse:
+    properties:
+      created_at:
+        type: string
+      id:
+        type: integer
+      ip:
+        type: string
+      message:
+        type: string
+      metadata:
+        additionalProperties: {}
+        type: object
+      source:
+        type: string
+    type: object
+  api_handlers.RuleResponse:
+    properties:
+      active:
+        type: boolean
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      pattern:
+        type: string
+      severity:
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
+      updated_at:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /decisions:
+    get:
+      parameters:
+      - default: 100
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/api_handlers.DecisionResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api_handlers.ErrorResponse'
+      summary: List analyst decisions
+      tags:
+      - decisions
+    post:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/api_handlers.DecisionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api_handlers.ErrorResponse'
+      summary: Record a decision or action
+      tags:
+      - decisions
+  /detections:
+    get:
+      parameters:
+      - description: Comma separated severities
+        in: query
+        name: severity
+        type: string
+      - description: Rule ID filter
+        in: query
+        name: rule_id
+        type: string
+      - description: From timestamp (RFC3339)
+        in: query
+        name: time_from
+        type: string
+      - description: To timestamp (RFC3339)
+        in: query
+        name: time_to
+        type: string
+      - default: 100
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/api_handlers.DetectionResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api_handlers.ErrorResponse'
+      summary: List detections
+      tags:
+      - detections
+  /detections/{id}:
+    get:
+      parameters:
+      - description: Detection ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api_handlers.DetectionResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api_handlers.ErrorResponse'
+      summary: Get detection detail
+      tags:
+      - detections
+  /events:
+    get:
+      description: Returns persisted events with optional filters
+      parameters:
+      - description: Filter by source
+        in: query
+        name: source
+        type: string
+      - description: Filter by source IP
+        in: query
+        name: ip
+        type: string
+      - description: Filter from timestamp (RFC3339)
+        in: query
+        name: time_from
+        type: string
+      - description: Filter to timestamp (RFC3339)
+        in: query
+        name: time_to
+        type: string
+      - default: 50
+        description: Limit
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: Offset
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/api_handlers.EventResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api_handlers.ErrorResponse'
+      summary: List events
+      tags:
+      - events
+    post:
+      consumes:
+      - application/json
+      description: Accepts single or batched events and runs detection rules
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api_handlers.ErrorResponse'
+      summary: Ingest security events
+      tags:
+      - events
+  /events/{id}:
+    get:
+      description: Returns a single event by ID
+      parameters:
+      - description: Event ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api_handlers.EventResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api_handlers.ErrorResponse'
+      summary: Get event detail
+      tags:
+      - events
+  /health:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "503":
+          description: Service Unavailable
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Service health check
+      tags:
+      - health
+  /rules:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/api_handlers.RuleResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api_handlers.ErrorResponse'
+      summary: List detection rules
+      tags:
+      - rules
+    post:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/api_handlers.RuleResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api_handlers.ErrorResponse'
+      summary: Create a detection rule
+      tags:
+      - rules
+  /rules/{id}:
+    patch:
+      consumes:
+      - application/json
+      parameters:
+      - description: Rule ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: ""
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api_handlers.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api_handlers.ErrorResponse'
+      summary: Toggle rule activation
+      tags:
+      - rules
+swagger: "2.0"

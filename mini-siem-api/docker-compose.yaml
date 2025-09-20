@@ -1,0 +1,31 @@
+version: "3.9"
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: mini_siem
+      POSTGRES_PASSWORD: mini_siem
+      POSTGRES_DB: mini_siem
+    volumes:
+      - mini-siem-data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      MINI_SIEM_ADDRESS: ":8085"
+      MINI_SIEM_DB_DRIVER: "postgres"
+      MINI_SIEM_DB_DSN: "host=db user=mini_siem password=mini_siem dbname=mini_siem port=5432 sslmode=disable"
+      MINI_SIEM_ADMIN_API_KEY: "changeme"
+      MINI_SIEM_LOG_LEVEL: "info"
+    depends_on:
+      - db
+    ports:
+      - "8085:8085"
+    command: ["/usr/local/bin/mini-siem-api"]
+
+volumes:
+  mini-siem-data:
