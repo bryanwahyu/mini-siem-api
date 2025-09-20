@@ -1,0 +1,241 @@
+basePath: /
+definitions:
+  internal_interfaces_httpapi.DecisionRequest:
+    properties:
+      ip:
+        type: string
+      reason:
+        type: string
+    type: object
+  server-analyst_internal_domain_entities.Decision:
+    properties:
+      action:
+        description: block, unblock
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      ip:
+        type: string
+      reason:
+        type: string
+      until:
+        type: string
+    type: object
+  server-analyst_internal_domain_entities.Detection:
+    properties:
+      category:
+        type: string
+      created_at:
+        type: string
+      event_id:
+        type: integer
+      id:
+        type: integer
+      metadata:
+        description: JSON string
+        type: string
+      rule:
+        type: string
+      severity:
+        type: string
+    type: object
+  server-analyst_internal_domain_entities.Event:
+    properties:
+      bytes:
+        type: integer
+      created_at:
+        type: string
+      host:
+        type: string
+      id:
+        type: integer
+      ip:
+        type: string
+      method:
+        type: string
+      path:
+        type: string
+      raw:
+        description: raw log line
+        type: string
+      referrer:
+        type: string
+      source:
+        description: file path or journald unit
+        type: string
+      status:
+        type: integer
+      ua:
+        type: string
+    type: object
+info:
+  contact: {}
+  description: Threat detection & decision API
+  title: Server-Analyst API
+  version: "1.0"
+paths:
+  /decisions:
+    get:
+      description: Returns recent decisions (max 100)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/server-analyst_internal_domain_entities.Decision'
+            type: array
+      summary: List decisions
+      tags:
+      - decisions
+  /decisions/block:
+    post:
+      consumes:
+      - application/json
+      description: Blocks an IP address via action adapters
+      parameters:
+      - description: Block request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_interfaces_httpapi.DecisionRequest'
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: bad request
+          schema:
+            type: string
+        "500":
+          description: internal error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Block IP
+      tags:
+      - decisions
+  /decisions/unblock:
+    post:
+      consumes:
+      - application/json
+      description: Unblocks an IP address via action adapters
+      parameters:
+      - description: Unblock request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/internal_interfaces_httpapi.DecisionRequest'
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: bad request
+          schema:
+            type: string
+        "500":
+          description: internal error
+          schema:
+            type: string
+      security:
+      - ApiKeyAuth: []
+      summary: Unblock IP
+      tags:
+      - decisions
+  /detections:
+    get:
+      description: 'Returns recent detections (max 100). "where" info is in Metadata
+        (JSON: ip, path, host, source)'
+      parameters:
+      - default: 100
+        description: max rows
+        in: query
+        name: limit
+        type: integer
+      - default: 0
+        description: rows to skip
+        in: query
+        name: offset
+        type: integer
+      - description: filter by IP
+        in: query
+        name: ip
+        type: string
+      - description: filter by host
+        in: query
+        name: host
+        type: string
+      - description: filter by source
+        in: query
+        name: source
+        type: string
+      - description: filter by category
+        in: query
+        name: category
+        type: string
+      - description: filter by rule
+        in: query
+        name: rule
+        type: string
+      - description: RFC3339 from time
+        in: query
+        name: from
+        type: string
+      - description: RFC3339 to time
+        in: query
+        name: to
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/server-analyst_internal_domain_entities.Detection'
+            type: array
+      summary: List detections
+      tags:
+      - detections
+  /events:
+    get:
+      description: Returns recent events (max 100)
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/server-analyst_internal_domain_entities.Event'
+            type: array
+      summary: List events
+      tags:
+      - events
+  /health:
+    get:
+      description: Returns service health
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Health check
+      tags:
+      - system
+schemes:
+- http
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: X-API-Key
+    type: apiKey
+swagger: "2.0"

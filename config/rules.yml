@@ -1,0 +1,31 @@
+rules:
+  - name: "SQLi common"
+    category: "sqli"
+    pattern: "(?i)(union\\s+select|select\\s+.+\\s+from|information_schema)"
+    enabled: true
+    severity: "high"
+  - name: "XSS payload"
+    category: "xss"
+    pattern: "(?i)(<script|onerror=|onload=|alert\\()"
+    enabled: true
+    severity: "medium"
+  - name: "Traversal"
+    category: "traversal"
+    pattern: "(?i)(\\.\\./|%2e%2e/|etc/passwd|php://input)"
+    enabled: true
+    severity: "high"
+  - name: "Fuzzer signatures"
+    category: "scanner"
+    pattern: "(?i)(wp-admin|phpmyadmin|boaform|HNAP1)"
+    enabled: true
+    severity: "low"
+  - name: "SSH brute force indicators"
+    category: "malware"
+    pattern: "(?i)(sshd\\[\\d+\\]: (failed password|error: maximum authentication attempts|invalid user)|authentication failure;.*rhost=|POSSIBLE BREAK-IN ATTEMPT)"
+    enabled: true
+    severity: "high"
+  - name: "HTTP auth brute force"
+    category: "malware"
+    pattern: "(?i)(POST /wp-login\\.php.*(401|403)|POST /xmlrpc\\.php.*(401|403)|authentication failed for user|login failed for user|invalid credentials)"
+    enabled: true
+    severity: "medium"

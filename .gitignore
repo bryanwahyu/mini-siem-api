@@ -1,0 +1,45 @@
+# Go binaries and build outputs
+/server-analyst
+*.exe
+*.dll
+*.so
+*.dylib
+*.test
+
+# Build artifacts and caches
+/bin/
+/build/
+/dist/
+/out/
+/tmp/
+/coverage/
+/cache/
+coverage.out
+*.coverprofile
+
+# Runtime data and logs
+*.log
+logs/
+sa_samples.log
+*.db
+*.sqlite
+*.sqlite3
+spool/
+*.tar
+*.tar.gz
+*.tgz
+*.zip
+
+# Local environment overrides
+.env
+.env.*
+*.local.yaml
+config/*.local.yaml
+config/*.local1.yaml
+# IDE and OS metadata
+.vscode/
+.idea/
+*.iml
+*~
+*.swp
+.DS_Store

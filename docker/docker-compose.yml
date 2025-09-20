@@ -1,0 +1,50 @@
+version: "3.8"
+services:
+  postgres:
+    image: postgres:15
+    container_name: analyst-postgres
+    environment:
+      POSTGRES_DB: analyst
+      POSTGRES_USER: analyst
+      POSTGRES_PASSWORD: analyst
+    ports:
+      - "5432:5432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  server-analyst:
+    build:
+      context: ../..
+      dockerfile: server-analyst/docker/Dockerfile
+    image: server-analyst:latest
+    container_name: server-analyst
+    depends_on:
+      - postgres
+    environment:
+      MINIO_ENDPOINT: "${MINIO_ENDPOINT:-minio.local:9000}"
+      MINIO_ACCESS_KEY: "${MINIO_ACCESS_KEY:-minio}"
+      MINIO_SECRET_KEY: "${MINIO_SECRET_KEY:-minio123}"
+      # DB connection for Postgres (must match config.yaml env placeholders)
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_USER: analyst
+      DB_PASSWORD: analyst
+      DB_NAME: analyst
+    volumes:
+      - /var/log:/var/log:ro
+      # Compose resolves relative paths from the compose file location
+      - ../config:/etc/server-analyst
+      - server_analyst_data:/var/lib/server-analyst
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD","/opt/server-analyst/server-analyst","health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  server_analyst_data:
+  pg_data:
